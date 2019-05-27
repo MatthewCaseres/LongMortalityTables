@@ -1,0 +1,15 @@
+Package: LongMortalityTables
+Title: A collection of mortality tables, all wide tables are converted to long tables
+Version: 0.1.0
+Authors@R:
+    person(given = "Matthew", family = "Caseres", email = "matthewcaseres@outlook.com",
+    role = c("aut", "cre"))
+Description: The SOA maintains a collection of mortality tables. Select and ultimate tables are in a wide format.
+    This enables users to call INDEX MATCH MATCH to calculate expected mortality for a particular issue age and duration. 
+    If we want to use a JOIN type operation, the data must be reformatted into a long format. This package is a collection
+    of mortality data that is never in a wide format so that it can always be easily joined. 
+Depends: R (>= 2.1.0)
+License: GPL-3
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 6.1.1
