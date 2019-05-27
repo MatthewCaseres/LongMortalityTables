@@ -5,13 +5,11 @@ library(readxl)
 library(stringr)
 library(tidyr)
 #You need to set your working directory to the file with all of the excel files
-file.list <- list.files(path = ".", pattern='*.xls')
+file.list <- list.files(path = ".", pattern='*.xlsx')
 
 #Initialize lists with elements for each select/ultimate table in each excel file
 all_select <- vector(mode="list", length=length(file.list))
 all_ultimate <- vector(mode="list", length=length(file.list))
-
-table_name <- read_excel(path = file.list[i], col_names = FALSE, range = "B1") %>% unlist()
 
 #Iterate through files
 for(i in seq_along(file.list)){
