@@ -37,5 +37,6 @@ GAM1983_GenderBlended <- bind_rows(all_files) %>%
   mutate(attained_age = as.integer(attained_age), q = as.double(q))
 
 usethis::use_data(GAM1983_GenderBlended)
+readr::write_csv(GAM1983_GenderBlended, "~/GitHub/LongMortalityTables/final-data-csv/1983GAM/GAM1983 Gender Blended/GAM1983 Gender Blended.csv")
 
 

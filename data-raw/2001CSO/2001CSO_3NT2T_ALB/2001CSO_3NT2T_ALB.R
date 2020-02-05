@@ -57,5 +57,50 @@ CSO2001_ALB_3NT2T_Select <- bind_rows(all_select) %>%
 CSO2001_ALB_3NT2T_Ultimate <- bind_rows(all_ultimate) %>%
   mutate(attained_age = as.integer(attained_age), q_ult = as.double(q_ult))
 
+
+
+CSO2001_ALB_3NT2T_Select
+CSO2001_ALB_3NT2T_Ultimate
+
 usethis::use_data(CSO2001_ALB_3NT2T_Select)
 usethis::use_data(CSO2001_ALB_3NT2T_Ultimate)
+readr::write_csv(CSO2001_ALB_3NT2T_Select, "~/GitHub/LongMortalityTables/final-data-csv/2001CSO/2001CSO_3NT2T_ALB/CSO2001_ALB_3NT2T_Select.csv")
+readr::write_csv(CSO2001_ALB_3NT2T_Ultimate, "~/GitHub/LongMortalityTables/final-data-csv/2001CSO/2001CSO_3NT2T_ALB/CSO2001_ALB_3NT2T_Ultimate.csv")
+
+##Function called in combineSelectUltimate
+makeRange <- function(max_age, table_list){
+  issue_age = data.frame(issue_age = 0:max_age, dummy = TRUE)
+  attained_age = data.frame(attained_age = 0:max_age, dummy = TRUE)
+
+  dplyr::inner_join(issue_age, attained_age, by = "dummy") %>%
+    dplyr::filter(attained_age >= issue_age) %>%
+    mutate(duration = attained_age - issue_age + 1) %>%
+    inner_join(table_list, by = "dummy")
+}
+
+##create the combined select and ultimate
+combineSelectUltimate <- function(select, ultimate) {
+  #This is joined to our range to produce ranges of all issue age/duration combinations for each table
+  #May need to update aggregated quantities depending on table structure
+  table_list <- ultimate %>%
+    group_by(table) %>%
+    summarise(gender = max(gender), risk = max(risk)) %>%
+    mutate(dummy=TRUE)
+
+  #Make range joins the table_list, may need to change the first argument to something other than 120
+  combined_frame <- makeRange(120, table_list)
+
+  #Join the select and ultimate tables to our frame
+  #Join criteria vary by table basis
+  combined_frame %>%
+    left_join(select, by = c("table", "gender", "risk", "issue_age", "duration")) %>%
+    left_join(ultimate, by = c("table", "gender", "risk", "attained_age")) %>%
+    select(-dummy) %>%
+    arrange(table, issue_age, duration)
+}
+
+CSO2001_ALB_3NT2T_Combined <- combineSelectUltimate(CSO2001_ALB_3NT2T_Select, CSO2001_ALB_3NT2T_Ultimate)
+
+usethis::use_data(CSO2001_ALB_3NT2T_Combined)
+readr::write_csv(CSO2001_ALB_3NT2T_Combined, "~/GitHub/LongMortalityTables/final-data-csv/2001CSO/2001CSO_3NT2T_ALB/CSO2001_ALB_3NT2T_Combined.csv")
+
