@@ -1,6 +1,5 @@
 setwd("~/GitHub/LongMortalityTables/data-raw/1983GAM/GAM1983 Basic")
 
-library(readr)
 library(dplyr)
 library(readxl)
 library(stringr)
