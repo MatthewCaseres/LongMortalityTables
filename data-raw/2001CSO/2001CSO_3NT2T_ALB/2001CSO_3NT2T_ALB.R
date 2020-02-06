@@ -57,11 +57,6 @@ CSO2001_ALB_3NT2T_Select <- bind_rows(all_select) %>%
 CSO2001_ALB_3NT2T_Ultimate <- bind_rows(all_ultimate) %>%
   mutate(attained_age = as.integer(attained_age), q_ult = as.double(q_ult))
 
-
-
-CSO2001_ALB_3NT2T_Select
-CSO2001_ALB_3NT2T_Ultimate
-
 usethis::use_data(CSO2001_ALB_3NT2T_Select)
 usethis::use_data(CSO2001_ALB_3NT2T_Ultimate)
 readr::write_csv(CSO2001_ALB_3NT2T_Select, "~/GitHub/LongMortalityTables/final-data-csv/2001CSO/2001CSO_3NT2T_ALB/CSO2001_ALB_3NT2T_Select.csv")

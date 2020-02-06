@@ -55,3 +55,42 @@ CSO2017_Unloaded_SmokerDistinct_Ultimate_ANB <- bind_rows(all_ultimate) %>%
 
 usethis::use_data(CSO2017_Unloaded_SmokerDistinct_Select_ANB)
 usethis::use_data(CSO2017_Unloaded_SmokerDistinct_Ultimate_ANB)
+readr::write_csv(CSO2017_Unloaded_SmokerDistinct_Select_ANB, "~/GitHub/LongMortalityTables/final-data-csv/2017CSO/2017CSO Unloaded Smoker Distinct ANB/2017CSO Unloaded Smoker Distinct ANB Select.csv")
+readr::write_csv(CSO2017_Unloaded_SmokerDistinct_Ultimate_ANB, "~/GitHub/LongMortalityTables/final-data-csv/2017CSO/2017CSO Unloaded Smoker Distinct ANB/2017CSO Unloaded Smoker Distinct ANB Ultimate.csv")
+
+##Function called in combineSelectUltimate
+makeRange <- function(max_age, table_list){
+  issue_age = data.frame(issue_age = 0:max_age, dummy = TRUE)
+  attained_age = data.frame(attained_age = 0:max_age, dummy = TRUE)
+
+  dplyr::inner_join(issue_age, attained_age, by = "dummy") %>%
+    dplyr::filter(attained_age >= issue_age) %>%
+    mutate(duration = attained_age - issue_age + 1) %>%
+    inner_join(table_list, by = "dummy")
+}
+
+##create the combined select and ultimate
+combineSelectUltimate <- function(select, ultimate) {
+  #This is joined to our range to produce ranges of all issue age/duration combinations for each table
+  #May need to update aggregated quantities depending on table structure
+  table_list <- ultimate %>%
+    group_by(table) %>%
+    summarise(gender = max(gender), tobacco = max(tobacco)) %>%
+    mutate(dummy=TRUE)
+
+  #Make range joins the table_list, may need to change the first argument to something other than 120
+  combined_frame <- makeRange(120, table_list)
+
+  #Join the select and ultimate tables to our frame
+  #Join criteria vary by table basis
+  combined_frame %>%
+    left_join(select, by = c("table", "gender", "tobacco", "issue_age", "duration")) %>%
+    left_join(ultimate, by = c("table", "gender", "tobacco", "attained_age")) %>%
+    select(-dummy) %>%
+    arrange(table, issue_age, duration)
+}
+
+CSO2017_Unloaded_SmokerDistinct_ANB_Combined <- combineSelectUltimate(CSO2017_Unloaded_SmokerDistinct_Select_ANB, CSO2017_Unloaded_SmokerDistinct_Ultimate_ANB)
+
+usethis::use_data(CSO2017_Unloaded_SmokerDistinct_ANB_Combined)
+readr::write_csv(CSO2017_Unloaded_SmokerDistinct_ANB_Combined, "~/GitHub/LongMortalityTables/final-data-csv/2017CSO/2017CSO Unloaded Smoker Distinct ANB/2017CSO Unloaded Smoker Distinct ANB Combined.csv")
