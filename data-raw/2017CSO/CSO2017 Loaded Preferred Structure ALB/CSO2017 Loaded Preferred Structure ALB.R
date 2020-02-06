@@ -22,9 +22,9 @@ for(i in seq_along(file.list)){
   )
   #Extract risk class from table name
   prefix <- case_when(
+    str_detect(table_name, "Residual") ~ "Residual",
     str_detect(table_name, "Super") ~ "SuperPref",
-    str_detect(table_name, "Preferred") ~ "Preferred",
-    str_detect(table_name, "Residual") ~ "Residual"
+    str_detect(table_name, "Preferred") ~ "Preferred"
   )
   tobacco <- case_when(
     str_detect(table_name, "Nonsmoker") ~ "Nonsmoker",
@@ -59,3 +59,42 @@ CSO2017_Loaded_PreferredStructure_ALB_Ultimate <- bind_rows(all_ultimate) %>%
 
 usethis::use_data(CSO2017_Loaded_PreferredStructure_ALB_Select)
 usethis::use_data(CSO2017_Loaded_PreferredStructure_ALB_Ultimate)
+readr::write_csv(CSO2017_Loaded_PreferredStructure_ALB_Select, "~/GitHub/LongMortalityTables/final-data-csv/2017CSO/2017CSO Loaded Preferred Structure ALB/2017CSO Loaded Preferred Structure ALB Select.csv")
+readr::write_csv(CSO2017_Loaded_PreferredStructure_ALB_Ultimate, "~/GitHub/LongMortalityTables/final-data-csv/2017CSO/2017CSO Loaded Preferred Structure ALB/2017CSO Loaded Preferred Structure ALB Ultimate.csv")
+
+##Function called in combineSelectUltimate
+makeRange <- function(max_age, table_list){
+  issue_age = data.frame(issue_age = 0:max_age, dummy = TRUE)
+  attained_age = data.frame(attained_age = 0:max_age, dummy = TRUE)
+
+  dplyr::inner_join(issue_age, attained_age, by = "dummy") %>%
+    dplyr::filter(attained_age >= issue_age) %>%
+    mutate(duration = attained_age - issue_age + 1) %>%
+    inner_join(table_list, by = "dummy")
+}
+
+##create the combined select and ultimate
+combineSelectUltimate <- function(select, ultimate) {
+  #This is joined to our range to produce ranges of all issue age/duration combinations for each table
+  #May need to update aggregated quantities depending on table structure
+  table_list <- ultimate %>%
+    group_by(table) %>%
+    summarise(gender = max(gender), risk = max(risk)) %>%
+    mutate(dummy=TRUE)
+
+  #Make range joins the table_list, may need to change the first argument to something other than 120
+  combined_frame <- makeRange(120, table_list)
+
+  #Join the select and ultimate tables to our frame
+  #Join criteria vary by table basis
+  combined_frame %>%
+    left_join(select, by = c("table", "gender", "risk", "issue_age", "duration")) %>%
+    left_join(ultimate, by = c("table", "gender", "risk", "attained_age")) %>%
+    select(-dummy) %>%
+    arrange(table, issue_age, duration)
+}
+
+CSO2017_Loaded_PreferredStructure_ALB_Combined <- combineSelectUltimate(CSO2017_Loaded_PreferredStructure_ALB_Select, CSO2017_Loaded_PreferredStructure_ALB_Ultimate)
+
+usethis::use_data(CSO2017_Loaded_PreferredStructure_ALB_Combined)
+readr::write_csv(CSO2017_Loaded_PreferredStructure_ALB_Combined, "~/GitHub/LongMortalityTables/final-data-csv/2017CSO/2017CSO Loaded Preferred Structure ALB/2017CSO Loaded Preferred Structure ALB Combined.csv")

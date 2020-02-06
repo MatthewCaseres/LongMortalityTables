@@ -35,3 +35,4 @@ GAM1983_Basic <- bind_rows(all_files) %>%
   mutate(attained_age = as.integer(attained_age), q = as.double(q))
 
 usethis::use_data(GAM1983_Basic)
+readr::write_csv(GAM1983_Basic, "~/GitHub/LongMortalityTables/final-data-csv/1983GAM/GAM1983 Basic/GAM1983 Basic.csv")
