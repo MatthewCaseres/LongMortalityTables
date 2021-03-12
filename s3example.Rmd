@@ -1,0 +1,37 @@
+---
+title: "S3 Mortality Tables"
+output: html_notebook
+---
+
+Install dependencies.
+```{r}
+library("aws.s3")
+library("readr")
+```
+
+The S3 bucket is in us-east-2.
+```{r}
+Sys.setenv("AWS_DEFAULT_REGION" = "us-east-2")
+```
+
+`get_bucket` lists the contents of the bucket. I saved this list as a dataframe for convenience/display.
+```{r}
+tables_list <- get_bucket(bucket = 'mortality-tables')
+tables_df <- data.frame(matrix(unlist(tables_list), nrow=length(tables_list), byrow=TRUE))
+colnames(tables_df) <- c("Key", "LastModified", "ETag", "Size", "StorageClass", "Bucket")
+tables_df
+```
+
+You can read a particular object from the bucket. `readr` correctly infers the data types.
+```{r}
+cso_2001 <- s3read_using(
+  read_csv, 
+  object = "2001CSO/2001CSO_3NT2T_ALB/CSO2001_ALB_3NT2T_Select.csv",
+  bucket = 'mortality-tables'
+)
+```
+
+Data is normalized/tidy for ease of use.
+```{r}
+cso_2001[23:27,]
+```
